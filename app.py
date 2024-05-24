@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
 from PyPDF2 import PdfReader
 from langchain.chains import ConversationChain
-from langchain.llms import OpenAI
+from langchain_openai import OpenAI  # Updated import
 
 app = Flask(__name__)
+
 
 def extract_text_from_pdf(pdf_path):
     with open(pdf_path, 'rb') as file:
@@ -15,6 +16,8 @@ def extract_text_from_pdf(pdf_path):
     return text
 
 # Load company policies from the PDF file
+
+
 pdf_path = 'data/company_policies.pdf'
 company_policies = extract_text_from_pdf(pdf_path)
 
@@ -32,6 +35,7 @@ def chat():
     response = conversation.run(user_message, context=company_policies)
     
     return jsonify({'response': response})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
