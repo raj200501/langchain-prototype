@@ -1,20 +1,27 @@
 from flask import Flask, request, jsonify
+from PyPDF2 import PdfReader
 from langchain.chains import ConversationChain
-from langchain.prompts import load_prompt
 from langchain.llms import OpenAI
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# Load extracted company policies
-with open('data/company_policies.txt', 'r') as file:
-    company_policies = file.read()
+def extract_text_from_pdf(pdf_path):
+    with open(pdf_path, 'rb') as file:
+        reader = PdfReader(file)
+        text = ""
+        for page_num in range(len(reader.pages)):
+            page = reader.pages[page_num]
+            text += page.extract_text()
+    return text
+
+# Load company policies from the PDF file
+pdf_path = 'data/company_policies.pdf'
+company_policies = extract_text_from_pdf(pdf_path)
 
 # Initialize LangChain components
 llm = OpenAI(api_key='YOUR_OPENAI_API_KEY')  # Replace with your OpenAI API key
 conversation = ConversationChain(llm=llm)
 
-# Define a route for the chatbot
 @app.route('/chat', methods=['POST'])
 def chat():
     user_message = request.json.get('message')
@@ -26,6 +33,5 @@ def chat():
     
     return jsonify({'response': response})
 
-# Run the Flask app
 if __name__ == '__main__':
     app.run(debug=True)
